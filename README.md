@@ -154,22 +154,43 @@ Documentação interativa (Swagger UI): `http://localhost:8000/docs`
 
 ## ☁️ Deploy na Oracle Cloud Infrastructure (OCI)
 
-1. Criar uma instância **OCI Compute** (Always Free — Ampere/VM.Standard.E2.1.Micro).
-2. Instalar Docker na instância:
-   ```bash
-   sudo apt update && sudo apt install -y docker.io docker-compose-plugin
-   ```
-3. Copiar o projeto para a instância (via `git clone` ou `scp`).
-4. Configurar o `.env` com a `GEMINI_API_KEY`.
-5. Liberar a porta 8000 na *Security List* / *Network Security Group* da VCN.
-6. Subir a aplicação:
-   ```bash
-   docker compose up -d --build
-   ```
-7. Acessar publicamente via `http://<IP-PUBLICO-DA-INSTANCIA>:8000/docs`.
+A aplicação está implantada e rodando publicamente em uma instância OCI Compute (Always Free — VM.Standard.E2.1.Micro, Ubuntu 22.04), containerizada via Docker.
 
-> 🔗 **URL de produção:** `http://<IP-PUBLICO>:8000`
-> 📸 Captura de tela do deploy: *(adicionar print da aplicação rodando na OCI)*
+> 🔗 **URL de produção:** http://168.138.141.230:8000
+> 📖 **Swagger UI:** http://168.138.141.230:8000/docs
+
+### Evidências do deploy
+
+| Swagger rodando na OCI | Resposta do agente via API pública |
+|---|---|
+| ![Swagger UI](evidencias/Captura%20de%20tela%202026-08-24%20230949.png) | ![Resposta do /ask](evidencias/Captura%20de%20tela%202026-08-24%20231027.png) |
+
+### Como foi feito o deploy
+
+1. Instância criada na OCI Compute (Always Free tier).
+2. Rede configurada: VCN própria, Internet Gateway, subnet pública e regras de firewall (porta 8000 liberada).
+3. Docker instalado na instância via script oficial (`get.docker.com`).
+4. Repositório clonado diretamente na instância via `git clone`.
+5. Variável de ambiente `GEMINI_API_KEY` configurada em um `.env` local à instância (nunca commitado no repositório).
+6. Aplicação subida com `docker compose up -d --build`.
+
+Para reproduzir esse processo em uma instância própria:
+
+```bash
+# Na instância OCI (via SSH)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker ubuntu
+
+git clone https://github.com/Eduardabarroscbg/bimbam-buy-assistant-.git
+cd bimbam-buy-assistant-
+
+# Criar o .env com a chave do Gemini
+nano .env
+# Conteúdo: GEMINI_API_KEY=sua_chave_aqui
+
+docker compose up -d --build
+```
 
 ---
 
